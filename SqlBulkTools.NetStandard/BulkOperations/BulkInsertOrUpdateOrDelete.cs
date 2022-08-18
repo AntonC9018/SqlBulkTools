@@ -41,6 +41,8 @@ namespace SqlBulkTools
             _deleteWhenNotMatchedFlag = false;
             _updatePredicates = new List<PredicateCondition>();
             _deletePredicates = new List<PredicateCondition>();
+            _deleteOrPredicates = new List<PredicateCondition>();
+            _deleteAndPredicates = new List<PredicateCondition>();
             _parameters = new List<SqlParameter>();
             _conditionSortOrder = 1;
             _excludeFromUpdate = new HashSet<string>();
@@ -275,6 +277,8 @@ namespace SqlBulkTools
             // Must be after ToDataTable is called.
             BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns, _matchTargetOn);
             BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _deletePredicates);
+            BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _deleteOrPredicates);
+            BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _deleteAndPredicates);
             BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _updatePredicates);
 
             if (connection.State != ConnectionState.Open)
@@ -369,6 +373,8 @@ namespace SqlBulkTools
             BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns, _matchTargetOn);
             BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _deletePredicates);
             BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _updatePredicates);
+            BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _deleteOrPredicates);
+            BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _deleteAndPredicates);
 
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync();
@@ -449,9 +455,9 @@ namespace SqlBulkTools
                     "WHEN NOT MATCHED BY TARGET THEN " +
                     BulkOperationsHelper.BuildInsertSet(_columns, Constants.SourceAlias, _identityColumn) +
                     (_deleteWhenNotMatchedFlag 
-                        ? " WHEN NOT MATCHED BY SOURCE " + 
+                        ? " WHEN NOT MATCHED BY SOURCE AND (" + 
                             BulkOperationsHelper.BuildPredicateDeleteWhen(_matchTargetOn.ToArray(), concatenatedQuery, Constants.TargetAlias, base._collationColumnDic) + 
-                            " THEN DELETE " 
+                            ") THEN DELETE " 
                         : " "
                     ) +
                     BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,
