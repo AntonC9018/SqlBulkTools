@@ -68,6 +68,19 @@ namespace SqlBulkTools
         }
 
         /// <summary>
+        /// A bulk insert or update is also known as bulk upsert or merge. All matching rows from the source will be updated.
+        /// Any unique rows not found in target but exist in source will be added. Notes: (1) BulkInsertOrUpdateOrDelete requires at least 
+        /// one MatchTargetOn property to be configured. (2) Only the columns configured (via AddColumn) 
+        /// will be evaluated. (3) Use AddAllColumns to add all columns in table.
+        /// </summary>
+        /// <returns></returns>
+        public BulkInsertOrUpdateOrDelete<T> BulkInsertOrUpdateOrDelete()
+        {
+            return new BulkInsertOrUpdateOrDelete<T>(bulk, _list, _tableName, _schema, _columns,
+                _customColumnMappings, _bulkCopySettings, _propertyInfoList);
+        }
+
+        /// <summary>
         /// A bulk update will attempt to update any matching records. Notes: (1) BulkUpdate requires at least one MatchTargetOn 
         /// property to be configured. (2) Only the columns configured (via AddColumn) will be evaluated. (3) Use AddAllColumns to add all columns in table.
         /// </summary>
