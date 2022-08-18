@@ -327,6 +327,56 @@ namespace SqlBulkTools
             return command.ToString();
         }
 
+        // Used for BulkInsertOrUpdateOrDelete deleteWhen, and, or conditions. 
+        internal static string BuildPredicateDeleteWhen(string[] updateOn, IEnumerable<PredicateCondition> conditions, string targetAlias,
+            Dictionary<string, string> collationDic)
+        {
+            if (conditions == null)
+                return null;
+
+            if (updateOn == null || updateOn.Length == 0)
+                throw new SqlBulkToolsException("MatchTargetOn is required for AndQuery.");
+
+            conditions = conditions.OrderBy(x => x.SortOrder);
+
+            var command = new StringBuilder();
+
+            foreach (var condition in conditions)
+            {
+                var targetColumn = condition.CustomColumnMapping ?? condition.LeftName;
+
+                switch (condition.PredicateType)
+                {
+                    case PredicateType.Delete:
+                        {
+                            break;
+                        }
+
+                    case PredicateType.And:
+                        {
+                            command.Append(" AND ");
+                            break;
+                        }
+
+                    case PredicateType.Or:
+                        {
+                            command.Append(" OR ");
+                            break;
+                        }
+
+                    default:
+                        {
+                            throw new KeyNotFoundException("Predicate not found");
+                        }
+                }
+
+                command.Append(
+                    $"[{targetAlias}].[{targetColumn}] {GetOperator(condition)} {(condition.Value != "NULL" ? "@" + condition.LeftName + Constants.UniqueParamIdentifier + condition.SortOrder + GetCollation(collationDic, condition.LeftName) : "NULL")}");
+            }
+
+            return command.ToString();
+        }
+
         internal static string GetOperator(PredicateCondition condition)
         {
             switch (condition.Expression)
@@ -475,9 +525,17 @@ namespace SqlBulkTools
         internal static string BuildSelectSet(HashSet<string> columns, string sourceAlias, string identityColumn)
         {
             var command = new StringBuilder();
-            var selectColumns = new List<string>();
 
             command.Append("SELECT ");
+            command.Append(BuildColumnsSet(columns, sourceAlias, identityColumn));
+
+            return command.ToString();
+        }
+
+        internal static string BuildColumnsSet(HashSet<string> columns, string sourceAlias, string identityColumn)
+        {
+            var command = new StringBuilder();
+            var selectColumns = new List<string>();
 
             foreach (var column in columns.ToList().OrderBy(x => x))
                 if (identityColumn != null && column != identityColumn || identityColumn == null)

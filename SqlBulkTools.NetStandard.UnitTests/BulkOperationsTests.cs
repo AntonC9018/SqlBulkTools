@@ -690,6 +690,51 @@ namespace SqlBulkTools.UnitTests
             Assert.Equal(result, "WHERE [id] = @id COLLATE DEFAULT_COLLATION");
         }
 
+        [Fact]
+        public void BulkOperationsHelper_BuildPredicateDeleteWhen_MultipleConditions()
+        {
+            // Arrange
+            var targetAlias = "Target";
+            var updateOn = new[] { "stub" };
+            var conditions = new List<PredicateCondition>
+            {
+                new PredicateCondition
+                {
+                    PredicateType = Enumeration.PredicateType.Delete,
+                    Expression = ExpressionType.NotEqual,
+                    LeftName = "Description",
+                    Value = "null",
+                    SortOrder = 1
+                },
+                new PredicateCondition
+                {
+                    PredicateType = Enumeration.PredicateType.And,
+                    Expression = ExpressionType.GreaterThanOrEqual,
+                    LeftName = "Price",
+                    Value = "50",
+                    ValueType = typeof(decimal),
+                    SortOrder = 2
+                },
+                new PredicateCondition
+                {
+                    PredicateType = Enumeration.PredicateType.Or,
+                    Expression = ExpressionType.Equal,
+                    LeftName = "ISBN",
+                    Value = "1234567890",
+                    ValueType = typeof(string),
+                    SortOrder = 3
+                },
+            };
+
+            var expected = "[Target].[Description] IS NOT NULL AND [Target].[Price] >= @PriceCondition2 OR [Target].[ISBN] = @ISBNCondition3";
+
+            // Act
+            var result = BulkOperationsHelper.BuildPredicateDeleteWhen(updateOn, conditions, targetAlias, null);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
         private HashSet<string> GetTestColumns()
         {
             var parameters = new HashSet<string>();
