@@ -48,6 +48,69 @@ namespace SqlBulkTools
         }
 
         /// <summary>
+        /// At least one MatchTargetOn is required for correct configuration. MatchTargetOn is the matching clause for evaluating
+        /// each row in table. This is usally set to the unique identifier in the table (e.g. Id). Multiple MatchTargetOn members are allowed
+        /// for matching composite relationships.
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <returns></returns>
+        public BulkInsertOrUpdateOrDelete<T> MatchTargetOn(Expression<Func<T, object>> columnName)
+        {
+            base.MatchTargetOn(columnName);
+            return this;
+        }
+
+        /// <summary>
+        /// At least one MatchTargetOn is required for correct configuration. MatchTargetOn is the matching clause for evaluating
+        /// each row in table. This is usally set to the unique identifier in the table (e.g. Id). Multiple MatchTargetOn members are allowed
+        /// for matching composite relationships.
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <param name="collation">Only explicitly set the collation if there is a collation conflict.</param>
+        /// <returns></returns>
+        public BulkInsertOrUpdateOrDelete<T> MatchTargetOn(Expression<Func<T, object>> columnName, string collation)
+        {
+            base.MatchTargetOn(columnName, collation);
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the identity column for the table. Required if an Identity column exists in table and one of the two
+        /// following conditions is met: (1) MatchTargetOn list contains an identity column (2) AddAllColumns is used in setup.
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <returns></returns>
+        public BulkInsertOrUpdateOrDelete<T> SetIdentityColumn(Expression<Func<T, object>> columnName)
+        {
+            base.SetIdentityColumn(columnName);
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the identity column for the table. Required if an Identity column exists in table and one of the two
+        /// following conditions is met: (1) MatchTargetOn list contains an identity column (2) AddAllColumns is used in setup.
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <param name="outputIdentity"></param>
+        /// <returns></returns>
+        public BulkInsertOrUpdateOrDelete<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirectionType outputIdentity)
+        {
+            base.SetIdentityColumn(columnName, outputIdentity);
+            return this;
+        }
+
+        /// <summary>
+        /// Exclude a property from the update statement. Useful for when you want to include CreatedDate or Guid for inserts only.
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <returns></returns>
+        public BulkInsertOrUpdateOrDelete<T> ExcludeColumnFromUpdate(Expression<Func<T, object>> columnName)
+        {
+            base.ExcludeColumnFromUpdate(columnName);
+            return this;
+        }
+
+        /// <summary>
         /// Only delete records when the target satisfies a speicific requirement. This is used in conjunction with MatchTargetOn.
         /// See help docs for examples
         /// </summary>
@@ -122,6 +185,49 @@ namespace SqlBulkTools
             string leftName = BulkOperationsHelper.GetExpressionLeftName(expression, PredicateType.Or, "Collation");
             _collationColumnDic.Add(BulkOperationsHelper.GetActualColumn(_customColumnMappings, leftName), collation);
 
+            return this;
+        }
+
+
+        /// <summary>
+        /// Sets the table hint to be used in the merge query. HOLDLOCk is the default that will be used if one is not set.
+        /// </summary>
+        /// <param name="tableHint"></param>
+        /// <returns></returns>
+        public BulkInsertOrUpdateOrDelete<T> SetTableHint(string tableHint)
+        {
+            base.SetTableHint(tableHint);
+            return this;
+        }
+
+        /// <summary>
+        /// Only update records when the target satisfies a speicific requirement. This is used in conjunction with MatchTargetOn.
+        /// See help docs for examples.
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        /// <exception cref="SqlBulkToolsException"></exception>
+        public BulkInsertOrUpdateOrDelete<T> UpdateWhen(Expression<Func<T, bool>> predicate)
+        {
+            base.UpdateWhen(predicate);
+            return this;
+        }
+
+        /// <summary>
+        /// If a target record can't be matched to a source record, it's deleted. Notes: (1) This is false by default. (2) Use at your own risk.
+        /// </summary>
+        /// <param name="flag"></param>
+        /// <returns></returns>
+        public BulkInsertOrUpdateOrDelete<T> DeleteWhenNotMatched(bool flag)
+        {
+            base.DeleteWhenNotMatched(flag);
+            return this;
+        }
+
+
+        public BulkInsertOrUpdateOrDelete<T> WithTimeout(int timeout)
+        {
+            base.WithTimeout(timeout);
             return this;
         }
 
