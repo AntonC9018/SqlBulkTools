@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using SqlBulkTools.BulkCopy;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools

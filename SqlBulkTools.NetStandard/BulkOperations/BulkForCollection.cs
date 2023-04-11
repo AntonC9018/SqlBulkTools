@@ -1,7 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using SqlBulkTools.BulkCopy;
 
 // ReSharper disable once CheckNamespace
